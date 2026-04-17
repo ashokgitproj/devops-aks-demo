@@ -1,0 +1,11 @@
+# Global owners — review all changes by default
+*                           @ashokgitproj
+
+# Pipeline changes must be reviewed by devops-team
+.github/workflows/          @ashokgitproj
+
+# Helm chart changes must be reviewed by devops-team
+charts/                     @ashokgitproj
+
+# Infra script changes must be reviewed by devops-team
+infra/                      @ashokgitproj
