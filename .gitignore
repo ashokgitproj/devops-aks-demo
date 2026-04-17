@@ -1,0 +1,38 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.env
+venv/
+.venv/
+
+# Node
+node_modules/
+.next/
+dist/
+
+# Helm
+charts/*/charts/
+charts/*/*.tgz
+
+# Terraform (if ever added)
+*.tfstate
+*.tfstate.backup
+.terraform/
+
+# Secrets (safety net — real secrets go in Key Vault)
+*.pem
+*.key
+*.p12
+secrets.yaml
