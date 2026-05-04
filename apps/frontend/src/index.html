@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DevOps AKS Demo</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 80px auto; text-align: center; }
+    button { padding: 12px 24px; font-size: 16px; cursor: pointer; background: #0078d4; color: white; border: none; border-radius: 4px; }
+    #counter { font-size: 48px; font-weight: bold; margin: 24px 0; color: #0078d4; }
+  </style>
+</head>
+<body>
+  <h1>AKS Demo App</h1>
+  <p>Visit counter powered by FastAPI + Redis</p>
+  <div id="counter">...</div>
+  <button onclick="increment()">Increment</button>
+  <script>
+    const BACKEND = window.BACKEND_URL || '/api';
+    async function load() {
+      const r = await fetch(`${BACKEND}/counter`);
+      const d = await r.json();
+      document.getElementById('counter').textContent = d.count;
+    }
+    async function increment() {
+      await fetch(`${BACKEND}/counter`, { method: 'POST' });
+      load();
+    }
+    load();
+  </script>
+</body>
+</html>
