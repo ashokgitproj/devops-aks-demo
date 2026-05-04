@@ -1,0 +1,105 @@
+name: CD Deploy
+
+on:
+  workflow_call:
+    inputs:
+      service:
+        required: true
+        type: string
+      image_tag:
+        required: true
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy-dev:
+    name: Deploy → dev
+    runs-on: ubuntu-latest
+    environment: dev          # no approval gate — auto deploys
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to Azure (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id:       ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id:       ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Get AKS credentials
+        run: |
+          az aks get-credentials \
+            --name aks-devops-demo \
+            --resource-group rg-devops-aks \
+            --overwrite-existing
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Helm deploy to dev
+        run: |
+          helm upgrade --install ${{ inputs.service }} charts/${{ inputs.service }} \
+            --namespace app-dev \
+            --create-namespace \
+            --values charts/${{ inputs.service }}/values/dev.yaml \
+            --set image.tag=${{ inputs.image_tag }} \
+            --set image.repository=${{ secrets.ACR_NAME }}.azurecr.io/${{ inputs.service }} \
+            --atomic \
+            --timeout 120s \
+            --wait
+
+      - name: Verify rollout
+        run: |
+          kubectl rollout status deployment/${{ inputs.service }} \
+            -n app-dev \
+            --timeout=120s
+
+  deploy-prod:
+    name: Deploy → prod
+    runs-on: ubuntu-latest
+    needs: deploy-dev
+    environment: prod         # manual approval gate lives here
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to Azure (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id:       ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id:       ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Get AKS credentials
+        run: |
+          az aks get-credentials \
+            --name aks-devops-demo \
+            --resource-group rg-devops-aks \
+            --overwrite-existing
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Helm deploy to prod
+        run: |
+          helm upgrade --install ${{ inputs.service }} charts/${{ inputs.service }} \
+            --namespace app-prod \
+            --create-namespace \
+            --values charts/${{ inputs.service }}/values/prod.yaml \
+            --set image.tag=${{ inputs.image_tag }} \
+            --set image.repository=${{ secrets.ACR_NAME }}.azurecr.io/${{ inputs.service }} \
+            --atomic \
+            --timeout 120s \
+            --wait
+
+      - name: Verify rollout
+        run: |
+          kubectl rollout status deployment/${{ inputs.service }} \
+            -n app-prod \
+            --timeout=120s
