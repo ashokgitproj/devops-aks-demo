@@ -1,0 +1,25 @@
+replicaCount: 1
+
+image:
+  repository: ""     # overridden at deploy time via --set
+  tag: "latest"
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 8000
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+redis:
+  host: redis
+  port: 6379
+
+serviceAccount:
+  name: workload-sa  # the SA we created with workload identity annotation
