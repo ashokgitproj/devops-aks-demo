@@ -22,3 +22,10 @@ def get_counter():
 def increment_counter():
     count = redis.incr("visit_count")
     return {"count": count}
+@app.get("/info")
+def info():
+    return {
+        "service": "backend",
+        "version": "1.1.0",
+        "environment": os.getenv("ENV", "unknown")
+    }
