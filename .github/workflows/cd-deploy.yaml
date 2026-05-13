@@ -18,7 +18,7 @@ jobs:
   deploy-dev:
     name: Deploy → dev
     runs-on: ubuntu-latest
-    environment: dev          # no approval gate — auto deploys
+    environment: dev
 
     steps:
       - name: Checkout code
@@ -31,7 +31,7 @@ jobs:
           tenant-id:       ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Set up kubelogin        # ← needed here too
+      - name: Set up kubelogin
         uses: azure/use-kubelogin@v1
         with:
           kubelogin-version: 'latest'
@@ -42,7 +42,7 @@ jobs:
             --name aks-devops-demo \
             --resource-group rg-devops-aks \
             --overwrite-existing
-          kubelogin convert-kubeconfig -l workloadidentity
+          kubelogin convert-kubeconfig -l azurecli
 
       - name: Set up Helm
         uses: azure/setup-helm@v4
@@ -69,7 +69,7 @@ jobs:
     name: Deploy → prod
     runs-on: ubuntu-latest
     needs: deploy-dev
-    environment: prod         # manual approval gate lives here
+    environment: prod
 
     steps:
       - name: Checkout code
@@ -82,7 +82,7 @@ jobs:
           tenant-id:       ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Set up kubelogin        # ← needed here too
+      - name: Set up kubelogin
         uses: azure/use-kubelogin@v1
         with:
           kubelogin-version: 'latest'
@@ -93,7 +93,7 @@ jobs:
             --name aks-devops-demo \
             --resource-group rg-devops-aks \
             --overwrite-existing
-          kubelogin convert-kubeconfig -l workloadidentity
+          kubelogin convert-kubeconfig -l azurecli
 
       - name: Set up Helm
         uses: azure/setup-helm@v4
